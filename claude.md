@@ -18,9 +18,11 @@ Règles de collaboration (obligatoires) :
 
 ## État actuel (à mettre à jour par moi)
 
-- Étape en cours : 0
-- Ce qui marche : rien d'écrit pour l'instant
-- Ce qui bloque : rien
+- Étape terminée : 0 · Préparation
+- Étape en cours : 1 · Cœur SSH sans interface (codée en partie, non validée)
+- Ce qui marche : workspace Cargo et crates app/core/terminal/vault présents ; iced fixé à 0.14.0 ; palette dans `crates/app/src/theme.rs` ; README ajouté ; `cargo build --workspace`, `cargo clippy --workspace --all-targets -- -D warnings` et `cargo fmt --all -- --check` passent ; serveur SSH Docker local testé manuellement par mot de passe et par clé (confirmation utilisateur)
+- Ce qui reste à faire : étape 1 — déjà codés dans `crates/core` : connexion par mot de passe avec empreinte d’hôte épinglée, shell interactif avec PTY et redimensionnement (exemples `connect` et `shell_echo`, test réel contre Docker à confirmer) ; reste : authentification par clé Ed25519 avec passphrase, keepalive, petit CLI interactif (mode raw) et fermeture propre
+- Règle de suivi : mettre à jour `README.md` et cet état à chaque étape validée ; ne pas passer à l’étape suivante sans confirmation « étape validée »
 
 ## Le projet
 
