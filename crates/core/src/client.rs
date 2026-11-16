@@ -1,8 +1,8 @@
 use std::sync::{Arc, Mutex};
 
-use russh::Disconnect;
 use russh::client::{self, Handle, Handler};
 use russh::keys::{HashAlg, ssh_key::PublicKey};
+use russh::{Channel, ChannelMsg, Disconnect};
 use zeroize::Zeroizing;
 
 use crate::error::SshError;
@@ -83,11 +83,67 @@ impl SshSession {
         Ok(Self { handle })
     }
 
+    /// Ouvre un shell interactif : canal de session, PTY `xterm-256color`, puis shell distant.
+    pub async fn open_shell(&self, cols: u32, rows: u32) -> Result<ShellChannel, SshError> {
+        let channel = self.handle.channel_open_session().await?;
+        channel
+            .request_pty(false, "xterm-256color", cols, rows, 0, 0, &[])
+            .await?;
+        channel.request_shell(false).await?;
+        Ok(ShellChannel { channel })
+    }
+
     /// Ferme proprement la session.
     pub async fn disconnect(&self) -> Result<(), SshError> {
         self.handle
             .disconnect(Disconnect::ByApplication, "", "en")
             .await?;
         Ok(())
+    }
+}
+
+/// Évènement émis par un shell distant.
+#[derive(Debug)]
+pub enum ShellEvent {
+    /// Octets de sortie du terminal distant (séquences d'échappement comprises).
+    Output(Vec<u8>),
+    /// Code de sortie du shell distant.
+    ExitStatus(u32),
+    /// Le canal est fermé par le serveur.
+    Closed,
+}
+
+/// Canal d'un shell interactif avec PTY.
+pub struct ShellChannel {
+    channel: Channel<client::Msg>,
+}
+
+impl ShellChannel {
+    /// Envoie des octets (frappes clavier, collage) au shell distant.
+    pub async fn write(&self, bytes: &[u8]) -> Result<(), SshError> {
+        self.channel.data(bytes).await?;
+        Ok(())
+    }
+
+    /// Informe le serveur d'un redimensionnement du terminal.
+    pub async fn resize(&self, cols: u32, rows: u32) -> Result<(), SshError> {
+        self.channel.window_change(cols, rows, 0, 0).await?;
+        Ok(())
+    }
+
+    /// Attend le prochain évènement ; `None` quand le canal est entièrement terminé.
+    pub async fn next_event(&mut self) -> Option<ShellEvent> {
+        loop {
+            match self.channel.wait().await? {
+                ChannelMsg::Data { data } | ChannelMsg::ExtendedData { data, .. } => {
+                    return Some(ShellEvent::Output(data.to_vec()));
+                }
+                ChannelMsg::ExitStatus { exit_status } => {
+                    return Some(ShellEvent::ExitStatus(exit_status));
+                }
+                ChannelMsg::Eof | ChannelMsg::Close => return Some(ShellEvent::Closed),
+                _ => {}
+            }
+        }
     }
 }
