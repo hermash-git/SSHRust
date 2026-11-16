@@ -1,0 +1,21 @@
+# Serveur SSH de TEST pour SSHRUST. Uniquement local : le port est lié à 127.0.0.1.
+# Identifiants de test (jetables, ne jamais réutiliser ailleurs) :
+#   utilisateur : test      mot de passe : sshrust-test
+# Le dossier ./config conserve les clés d'hôte : l'empreinte reste identique si on recrée le conteneur.
+services:
+  sshrust-test:
+    image: lscr.io/linuxserver/openssh-server:latest
+    container_name: sshrust-test
+    hostname: sshrust-test
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Paris
+      - PASSWORD_ACCESS=true
+      - USER_NAME=test
+      - USER_PASSWORD=sshrust-test
+    volumes:
+      - ./config:/config
+    ports:
+      - "127.0.0.1:2222:2222"
+    restart: unless-stopped
