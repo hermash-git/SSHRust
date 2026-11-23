@@ -1,5 +1,6 @@
 use std::path::Path;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use russh::client::{self, Handle, Handler};
 use russh::keys::{HashAlg, PrivateKeyWithHashAlg, load_secret_key, ssh_key::PublicKey};
@@ -58,7 +59,12 @@ impl SshSession {
             expected: params.expected_fingerprint.to_owned(),
             rejected: Arc::clone(&rejected),
         };
-        let config = Arc::new(client::Config::default());
+        // Keepalive : un message toutes les 30 s, connexion jugée coupée après 3 sans réponse.
+        let config = Arc::new(client::Config {
+            keepalive_interval: Some(Duration::from_secs(30)),
+            keepalive_max: 3,
+            ..client::Config::default()
+        });
 
         match client::connect(config, (params.host, params.port), handler).await {
             Ok(handle) => Ok(handle),
