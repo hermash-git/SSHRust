@@ -64,7 +64,7 @@ SSHRust/
 - Étape 0 · Préparation : terminée.
 - Étape en cours : 1 · Cœur SSH sans interface (non validée).
 - Étape 1 codée en partie : connexion par mot de passe avec empreinte d’hôte épinglée, shell interactif avec PTY et redimensionnement dans `crates/core` ; testé avec succès contre le conteneur Docker (`docker/compose.yml`).
-- Serveur SSH Docker local : connexion par mot de passe confirmée ; clé de test à reconfigurer sur le nouveau conteneur.
+- Serveur SSH Docker local : connexion par mot de passe et par clé (avec passphrase) confirmées.
 - `cargo build --workspace` : réussi.
 - `cargo clippy --workspace --all-targets -- -D warnings` : réussi.
 - `cargo fmt --all -- --check` : réussi.
@@ -89,9 +89,12 @@ cargo test --workspace
 cargo clippy --workspace --all-targets -- -D warnings
 cargo fmt --all -- --check
 cargo run -p sshrust-app
-# Tests manuels de l’étape 1 (variables SSHRUST_FINGERPRINT et SSHRUST_PASSWORD requises)
+# Tests manuels de l’étape 1 (empreinte en 1er argument ou via SSHRUST_FINGERPRINT, voir docker/compose.yml)
+# Exemple : cargo run -p sshrust-core --example connect -- SHA256:...
 cargo run -p sshrust-core --example connect
 cargo run -p sshrust-core --example shell_echo
+cargo run -p sshrust-core --example connect_key
+cargo run -p sshrust-core --example ssh_cli -- <empreinte> [key]
 ```
 
 ## Plan de travail concret
