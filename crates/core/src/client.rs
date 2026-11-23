@@ -1,7 +1,8 @@
+use std::path::Path;
 use std::sync::{Arc, Mutex};
 
 use russh::client::{self, Handle, Handler};
-use russh::keys::{HashAlg, ssh_key::PublicKey};
+use russh::keys::{HashAlg, PrivateKeyWithHashAlg, load_secret_key, ssh_key::PublicKey};
 use russh::{Channel, ChannelMsg, Disconnect};
 use zeroize::Zeroizing;
 
@@ -48,11 +49,10 @@ pub struct SshSession {
 }
 
 impl SshSession {
-    /// Se connecte, vérifie l'empreinte de l'hôte puis s'authentifie par mot de passe.
-    pub async fn connect_with_password(
+    /// Connexion TCP et vérification de l'empreinte de l'hôte, sans authentification.
+    async fn open_transport(
         params: &ConnectParams<'_>,
-        password: &Zeroizing<String>,
-    ) -> Result<Self, SshError> {
+    ) -> Result<Handle<PinnedKeyHandler>, SshError> {
         let rejected = Arc::new(Mutex::new(None));
         let handler = PinnedKeyHandler {
             expected: params.expected_fingerprint.to_owned(),
@@ -60,22 +60,48 @@ impl SshSession {
         };
         let config = Arc::new(client::Config::default());
 
-        let mut handle = match client::connect(config, (params.host, params.port), handler).await {
-            Ok(handle) => handle,
+        match client::connect(config, (params.host, params.port), handler).await {
+            Ok(handle) => Ok(handle),
             Err(err) => {
                 let actual = rejected.lock().ok().and_then(|mut slot| slot.take());
-                return Err(match actual {
+                Err(match actual {
                     Some(actual) => SshError::HostKeyMismatch {
                         expected: params.expected_fingerprint.to_owned(),
                         actual,
                     },
                     None => SshError::Ssh(err),
-                });
+                })
             }
-        };
+        }
+    }
 
+    /// Se connecte, vérifie l'empreinte de l'hôte puis s'authentifie par mot de passe.
+    pub async fn connect_with_password(
+        params: &ConnectParams<'_>,
+        password: &Zeroizing<String>,
+    ) -> Result<Self, SshError> {
+        let mut handle = Self::open_transport(params).await?;
         let result = handle
             .authenticate_password(params.user, password.as_str())
+            .await?;
+        if !result.success() {
+            return Err(SshError::AuthRejected);
+        }
+        Ok(Self { handle })
+    }
+
+    /// Se connecte, vérifie l'empreinte de l'hôte puis s'authentifie par clé privée
+    /// (Ed25519, ECDSA, RSA), avec passphrase si la clé est chiffrée.
+    /// La clé est chargée avant toute connexion : une mauvaise passphrase échoue tout de suite.
+    pub async fn connect_with_key(
+        params: &ConnectParams<'_>,
+        key_path: &Path,
+        passphrase: Option<&Zeroizing<String>>,
+    ) -> Result<Self, SshError> {
+        let key = load_secret_key(key_path, passphrase.map(|p| p.as_str()))?;
+        let mut handle = Self::open_transport(params).await?;
+        let result = handle
+            .authenticate_publickey(params.user, PrivateKeyWithHashAlg::new(Arc::new(key), None))
             .await?;
         if !result.success() {
             return Err(SshError::AuthRejected);

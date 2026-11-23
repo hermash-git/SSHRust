@@ -11,6 +11,10 @@ pub enum SshError {
     #[error("authentification refusée par le serveur")]
     AuthRejected,
 
+    /// Clé privée illisible, au mauvais format ou passphrase incorrecte.
+    #[error("impossible de charger la clé privée : {0}")]
+    Key(#[from] russh::keys::Error),
+
     /// Erreur du protocole ou du transport SSH.
     #[error("erreur SSH : {0}")]
     Ssh(#[from] russh::Error),
