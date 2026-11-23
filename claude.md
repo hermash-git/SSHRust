@@ -1,8 +1,6 @@
 # SSHRUST — Instructions pour l'assistant de code
 
-## Qui je suis et comment tu dois travailler
-
-Je suis étudiant en développement et je construis un client SSH desktop en Rust. Je veux comprendre ce que j'écris, pas seulement obtenir du code.
+## Comment tu dois travailler
 
 Règles de collaboration (obligatoires) :
 
@@ -20,8 +18,8 @@ Règles de collaboration (obligatoires) :
 
 - Étape terminée : 0 · Préparation
 - Étape en cours : 1 · Cœur SSH sans interface (codée en partie, non validée)
-- Ce qui marche : workspace Cargo et crates app/core/terminal/vault présents ; iced fixé à 0.14.0 ; palette dans `crates/app/src/theme.rs` ; README ajouté ; `cargo build --workspace`, `cargo clippy --workspace --all-targets -- -D warnings` et `cargo fmt --all -- --check` passent ; serveur SSH Docker local testé manuellement par mot de passe et par clé (confirmation utilisateur)
-- Ce qui reste à faire : étape 1 — déjà codés dans `crates/core` : connexion par mot de passe avec empreinte d’hôte épinglée, shell interactif avec PTY et redimensionnement (exemples `connect` et `shell_echo`, test réel contre Docker à confirmer) ; reste : authentification par clé Ed25519 avec passphrase, keepalive, petit CLI interactif (mode raw) et fermeture propre
+- Ce qui marche : workspace Cargo et crates app/core/terminal/vault présents ; iced fixé à 0.14.0 ; palette dans `crates/app/src/theme.rs` ; README ajouté ; `cargo build --workspace`, `cargo clippy --workspace --all-targets -- -D warnings` et `cargo fmt --all -- --check` passent ; serveur SSH Docker local (`docker/compose.yml`, utilisateur `test`) validé par test réel en connexion par mot de passe avec empreinte épinglée et en shell avec PTY ; la clé de test reste à reconfigurer sur le nouveau conteneur
+- Ce qui reste à faire : étape 1 — déjà codés dans `crates/core` : connexion par mot de passe avec empreinte d’hôte épinglée, shell interactif avec PTY et redimensionnement (exemples `connect` et `shell_echo`, testés avec succès contre le conteneur Docker) ; reste : authentification par clé Ed25519 avec passphrase, keepalive, petit CLI interactif (mode raw) et fermeture propre
 - Règle de suivi : mettre à jour `README.md` et cet état à chaque étape validée ; ne pas passer à l’étape suivante sans confirmation « étape validée »
 
 ## Le projet

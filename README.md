@@ -63,8 +63,8 @@ SSHRust/
 
 - Étape 0 · Préparation : terminée.
 - Étape en cours : 1 · Cœur SSH sans interface (non validée).
-- Étape 1 codée en partie : connexion par mot de passe avec empreinte d’hôte épinglée, shell interactif avec PTY et redimensionnement dans `crates/core` ; test réel contre le conteneur Docker à confirmer.
-- Serveur SSH Docker local : connexion par mot de passe et par clé confirmées manuellement.
+- Étape 1 codée en partie : connexion par mot de passe avec empreinte d’hôte épinglée, shell interactif avec PTY et redimensionnement dans `crates/core` ; testé avec succès contre le conteneur Docker (`docker/compose.yml`).
+- Serveur SSH Docker local : connexion par mot de passe confirmée ; clé de test à reconfigurer sur le nouveau conteneur.
 - `cargo build --workspace` : réussi.
 - `cargo clippy --workspace --all-targets -- -D warnings` : réussi.
 - `cargo fmt --all -- --check` : réussi.
@@ -98,7 +98,7 @@ cargo run -p sshrust-core --example shell_echo
 
 ## Prochaine tâche concrète
 
-Étape 1 dans `crates/core`, sans dépendance à iced (points 1 et 2 codés ; point 3 en partie avec l’exemple `shell_echo`, sans CLI interactif ; point 4 à faire ; test réel à valider) :
+Étape 1 dans `crates/core`, sans dépendance à iced (points 1 et 2 codés ; point 3 en partie avec l’exemple `shell_echo`, sans CLI interactif ; point 4 à faire ; test réel réussi) :
 
 1. Vérifier la version et l’API de `russh` appropriées avant d’écrire du code.
 2. Définir les types d’erreurs et une API minimale de connexion par mot de passe.
