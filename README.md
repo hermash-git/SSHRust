@@ -62,8 +62,9 @@ SSHRust/
 ## État d’avancement
 
 - Étape 0 · Préparation : terminée.
-- Étape en cours : 1 · Cœur SSH sans interface (non validée).
-- Étape 1 codée en partie : connexion par mot de passe avec empreinte d’hôte épinglée, shell interactif avec PTY et redimensionnement dans `crates/core` ; testé avec succès contre le conteneur Docker (`docker/compose.yml`).
+- Étape 1 · Cœur SSH sans interface : terminée et validée.
+- Étape en cours : 2a · Test de faisabilité du terminal (`alacritty_terminal` dans iced).
+- Étape 1 réalisée : connexion par mot de passe avec empreinte d’hôte épinglée, shell interactif avec PTY et redimensionnement dans `crates/core` ; testé avec succès contre le conteneur Docker (`docker/compose.yml`).
 - Serveur SSH Docker local : connexion par mot de passe et par clé (avec passphrase) confirmées.
 - `cargo build --workspace` : réussi.
 - `cargo clippy --workspace --all-targets -- -D warnings` : réussi.
@@ -101,12 +102,12 @@ cargo run -p sshrust-core --example ssh_cli -- <empreinte> [key]
 
 ## Prochaine tâche concrète
 
-Étape 1 dans `crates/core`, sans dépendance à iced (points 1 et 2 codés ; point 3 en partie avec l’exemple `shell_echo`, sans CLI interactif ; point 4 à faire ; test réel réussi) :
+Étape 2a : test de faisabilité du terminal, sans toucher au cœur SSH. Afficher une grille `alacritty_terminal` dans iced (texte coloré, curseur), alimentée par des octets de test, et mesurer la fluidité avec un `cat` d’un gros fichier. Si le rendu est impraticable dans iced, s’arrêter et étudier egui.
 
-1. Vérifier la version et l’API de `russh` appropriées avant d’écrire du code.
-2. Définir les types d’erreurs et une API minimale de connexion par mot de passe.
-3. Ajouter un petit client CLI de test et obtenir un shell interactif avec pseudo-terminal sur le conteneur local.
-4. Ajouter ensuite l’authentification par clé Ed25519 avec passphrase, le redimensionnement et le keepalive.
+1. Vérifier la version, la licence et l’API d’`alacritty_terminal` avant d’écrire du code.
+2. Utiliser `Term` et `vte::ansi::Processor` en mode headless, sans boucle d’événements.
+3. Dessiner la grille dans un canvas iced et alimenter le moteur avec des octets de test.
+4. Mesurer la fluidité avec un gros fichier.
 
 Tester exclusivement contre le conteneur local. Les essais de connexion Rust et la validation de la clé d’hôte font partie de l’étape 1 ; ne pas accepter silencieusement une empreinte en production.
 

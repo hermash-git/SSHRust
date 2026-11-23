@@ -16,10 +16,10 @@ Règles de collaboration (obligatoires) :
 
 ## État actuel (à mettre à jour par moi)
 
-- Étape terminée : 0 · Préparation
-- Étape en cours : 1 · Cœur SSH sans interface (codée en partie, non validée)
-- Ce qui marche : workspace Cargo et crates app/core/terminal/vault présents ; iced fixé à 0.14.0 ; palette dans `crates/app/src/theme.rs` ; README ajouté ; `cargo build --workspace`, `cargo clippy --workspace --all-targets -- -D warnings` et `cargo fmt --all -- --check` passent ; serveur SSH Docker local (`docker/compose.yml`, utilisateur `test`) validé par test réel en connexion par mot de passe avec empreinte épinglée et en shell avec PTY ; la clé de test (`docker/test_key`, non versionnée) est configurée sur le conteneur
-- Ce qui reste à faire : étape 1 — déjà codés dans `crates/core` : connexion par mot de passe avec empreinte d’hôte épinglée, shell interactif avec PTY et redimensionnement (exemples `connect` et `shell_echo`, testés avec succès contre le conteneur Docker) ; déjà faits aussi : authentification par clé avec passphrase (exemple `connect_key`, testée) et keepalive configuré (30 s, 3 échecs ; comportement lors d’une coupure non testé) ; reste : valider le petit CLI interactif `ssh_cli` (écrit, à tester dans un vrai terminal : mode raw, redimensionnement, fermeture propre)
+- Étapes terminées : 0 · Préparation, 1 · Cœur SSH sans interface (validée)
+- Étape en cours : 2a · Test de faisabilité du terminal (`alacritty_terminal` dans iced)
+- Ce qui marche : workspace Cargo et crates app/core/terminal/vault présents ; iced fixé à 0.14.0 ; palette dans `crates/app/src/theme.rs` ; README ajouté ; `cargo build --workspace`, `cargo clippy --workspace --all-targets -- -D warnings` et `cargo fmt --all -- --check` passent ; serveur SSH Docker local (`docker/compose.yml`, utilisateur `test`) validé par test réel en connexion par mot de passe avec empreinte épinglée et en shell avec PTY ; la clé de test (`docker/test_key`, non versionnée) est configurée sur le conteneur ; étape 1 validée : connexion par mot de passe ou clé (passphrase) avec empreinte d’hôte épinglée, shell PTY, redimensionnement, keepalive et CLI `ssh_cli` dans `crates/core`
+- Ce qui reste à faire : étape 2a — afficher une grille `alacritty_terminal` dans iced (texte coloré, curseur) alimentée par des octets de test, mesurer la fluidité avec un `cat` d’un gros fichier ; si le rendu est impraticable, s’arrêter et étudier egui. Pour l’étape 2, installer vim, htop et tmux dans le conteneur de test. Dans `crates/core` : keepalive configuré mais comportement lors d’une coupure réelle non testé (à revoir à l’étape 6)
 - Règle de suivi : mettre à jour `README.md` et cet état à chaque étape validée ; ne pas passer à l’étape suivante sans confirmation « étape validée »
 
 ## Le projet
