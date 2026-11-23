@@ -1,6 +1,8 @@
 # Serveur SSH de TEST pour SSHRUST. Uniquement local : le port est lié à 127.0.0.1.
 # Identifiants de test (jetables, ne jamais réutiliser ailleurs) :
 #   utilisateur : test      mot de passe : sshrust-test
+#   clé Ed25519 : docker/test_key (non versionnée, ignorée par git), passphrase : sshrust-key-pass
+# docker/test_key.pub doit exister avant `docker compose up`, sinon Docker crée un dossier à sa place.
 # Le dossier ./config conserve les clés d'hôte : l'empreinte reste identique si on recrée le conteneur.
 services:
   sshrust-test:
@@ -14,8 +16,10 @@ services:
       - PASSWORD_ACCESS=true
       - USER_NAME=test
       - USER_PASSWORD=sshrust-test
+      - PUBLIC_KEY_FILE=/keys/test_key.pub
     volumes:
       - ./config:/config
+      - ./test_key.pub:/keys/test_key.pub:ro
     ports:
       - "127.0.0.1:2222:2222"
     restart: unless-stopped
