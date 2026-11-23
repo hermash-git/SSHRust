@@ -141,7 +141,7 @@ impl ShellChannel {
                 ChannelMsg::ExitStatus { exit_status } => {
                     return Some(ShellEvent::ExitStatus(exit_status));
                 }
-                ChannelMsg::Eof | ChannelMsg::Close => return Some(ShellEvent::Closed),
+                ChannelMsg::Close => return Some(ShellEvent::Closed),
                 _ => {}
             }
         }

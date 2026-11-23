@@ -1,8 +1,8 @@
 //! Test manuel de l'étape 1a : connexion par mot de passe avec empreinte d'hôte épinglée.
 //!
 //! Variables d'environnement :
-//! - `SSHRUST_FINGERPRINT` (obligatoire) : empreinte attendue, ex. `SHA256:...`
-//! - `SSHRUST_PASSWORD` (obligatoire) : mot de passe (serveur de test uniquement)
+//! - `SSHRUST_FINGERPRINT` (ou premier argument) : empreinte attendue, ex. `SHA256:...`
+//! - `SSHRUST_PASSWORD` (défaut `sshrust-test`, serveur de test local uniquement)
 //! - `SSHRUST_HOST` (défaut 127.0.0.1), `SSHRUST_PORT` (défaut 2222), `SSHRUST_USER` (défaut test)
 
 use std::env;
@@ -18,9 +18,11 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .parse()?;
     let user = env::var("SSHRUST_USER").unwrap_or_else(|_| "test".into());
     let fingerprint = env::var("SSHRUST_FINGERPRINT")
-        .map_err(|_| "SSHRUST_FINGERPRINT manquante (format SHA256:...)")?;
+        .ok()
+        .or_else(|| env::args().nth(1))
+        .ok_or("empreinte manquante : SSHRUST_FINGERPRINT ou premier argument (SHA256:...)")?;
     let password =
-        Zeroizing::new(env::var("SSHRUST_PASSWORD").map_err(|_| "SSHRUST_PASSWORD manquante")?);
+        Zeroizing::new(env::var("SSHRUST_PASSWORD").unwrap_or_else(|_| "sshrust-test".into()));
 
     let params = ConnectParams {
         host: &host,
